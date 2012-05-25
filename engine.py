@@ -7,7 +7,7 @@ incoming Tank Action Requests.
 
 """
 
-from tank.system import Engine
+from tank.platform import Engine
 import tank
 import sys
 

@@ -42,11 +42,11 @@ class ShotgunEngineTestBase(TankTestBase):
         Instantiates an engine with a context reflecting context
         related keywords passed.
         """
-        ctx = tank.system.Context(**kws)
+        ctx = tank.platform.Context(**kws)
         return ShotgunEngine(ctx)
 
 
 class TestShotgunEngine(ShotgunEngineTestBase):
 
     def test_engine(self):
-        self.assertIsInstance(self.engine, tank.system.engine.Engine)
+        self.assertIsInstance(self.engine, tank.platform.engine.Engine)
