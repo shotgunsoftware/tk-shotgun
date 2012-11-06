@@ -31,7 +31,7 @@ class ShotgunEngine(Engine):
 
     def log_debug(self, msg):
         if self.get_setting("debug_logging", False):
-            msg = cgi.escape(msg)
+            msg = cgi.escape(str(msg))
             sys.stdout.write("DEBUG: %s\n" % msg)
     
     def log_info(self, msg):
@@ -44,13 +44,13 @@ class ShotgunEngine(Engine):
         # allow these to use html for formatting purposes
 
         # note: java bridge only captures stdout, not stderr
-        msg = cgi.escape(msg)
+        msg = cgi.escape(str(msg))
         sys.stdout.write("WARNING: %s\n" % msg)
     
     def log_error(self, msg):
         # note: java bridge only captures stdout, not stderr
         # make sure we escape html so that all content shows up in shotgun
-        msg = cgi.escape(msg)
+        msg = cgi.escape(str(msg))
         sys.stdout.write("ERROR: %s\n" % msg)
 
     ##########################################################################################
