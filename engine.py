@@ -11,6 +11,8 @@ from tank.platform import Engine
 import tank
 import cgi
 import sys
+import os
+
 
 
 class ShotgunEngine(Engine):
@@ -62,15 +64,24 @@ class ShotgunEngine(Engine):
         check for pyside then pyqt
         """
         
+        
         base = {"qt_core": None, "qt_gui": None, "dialog_base": None}
         self._has_ui = False
         
         if not self._has_ui:
             try:
                 from PySide import QtCore, QtGui
+
+                # a simple dialog proxy that pushes the window forward
+                class ProxyDialogPySide(QtGui.QDialog):
+                    def show(self):
+                        QtGui.QDialog.show(self)
+                        self.activateWindow()
+                        self.raise_()
+                
                 base["qt_core"] = QtCore
                 base["qt_gui"] = QtGui
-                base["dialog_base"] = QtGui.QDialog
+                base["dialog_base"] = ProxyDialogPySide
                 self._has_ui = True
             except:
                 self.log_debug("Found PySide install present in %s." % QtGui.__file__)
@@ -78,11 +89,20 @@ class ShotgunEngine(Engine):
         if not self._has_ui:
             try:
                 from PyQt4 import QtCore, QtGui
+                
+                # a simple dialog proxy that pushes the window forward
+                class ProxyDialogPyQt(QtGui.QDialog):
+                    def show(self):
+                        QtGui.QDialog.show(self)
+                        self.activateWindow()
+                        self.raise_()
+                
+                
                 # hot patch the library to make it work with pyside code
                 QtCore.Signal = QtCore.pyqtSignal                
                 base["qt_core"] = QtCore
                 base["qt_gui"] = QtGui
-                base["dialog_base"] = QtGui.QDialog
+                base["dialog_base"] = ProxyDialogPyQt
                 self._has_ui = True
             except:
                 self.log_debug("Found PyQt install present in %s." % QtGui.__file__)
@@ -103,6 +123,10 @@ class ShotgunEngine(Engine):
         
         :returns: the created widget_class instance
         """
+        from tank.platform.qt import QtCore, QtGui
+        
+        
+        
         if not self._has_ui:
             self.log_error("Cannot show dialog! No QT support appears to exist in this enging. "
                            "In order for the shell engine to run UI based apps, either pyside "
@@ -110,15 +134,23 @@ class ShotgunEngine(Engine):
         
         start_app_loop = False
         if self._qt_application is None:
-            self._qt_application = QtGui.QApplication()
+            QtGui.QApplication.setStyle("cleanlooks")
+            self._qt_application = QtGui.QApplication([])
+            css_file = os.path.join(self.disk_location, "resources", "dark.css")
+            f = open(css_file)
+            css = f.read()
+            f.close()
+            self._qt_application.setStyleSheet(css)        
             start_app_loop = True
             
         obj = Engine.show_dialog(self, title, bundle, widget_class, *args, **kwargs)
+
         if start_app_loop:
             self._qt_application.exec_()
             # this is a bit weird - we are not returning the dialog object because
             # at this point the application has already exited
             return None
+        
         else:
             # a dialog was called by a signal or slot
             # in the qt message world. return its handle
@@ -138,6 +170,8 @@ class ShotgunEngine(Engine):
 
         :returns: (a standard QT dialog status return code, the created widget_class instance)
         """
+        from tank.platform.qt import QtCore, QtGui
+        
         if not self._has_ui:
             self.log_error("Cannot show dialog! No QT support appears to exist in this enging. "
                            "In order for the shell engine to run UI based apps, either pyside "
