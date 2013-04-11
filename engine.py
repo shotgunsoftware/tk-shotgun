@@ -53,7 +53,7 @@ class ShotgunEngine(Engine):
         # note: java bridge only captures stdout, not stderr
         # make sure we escape html so that all content shows up in shotgun
         msg = cgi.escape(str(msg))
-        sys.stdout.write("<b>ERROR:</b> %s" % msg)
+        sys.stdout.write("<b>ERROR:</b> %s\n" % msg)
 
     
     ##########################################################################################
