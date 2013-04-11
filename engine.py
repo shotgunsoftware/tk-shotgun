@@ -123,14 +123,13 @@ class ShotgunEngine(Engine):
         
         :returns: the created widget_class instance
         """
-        from tank.platform.qt import QtCore, QtGui
-        
-        
-        
         if not self._has_ui:
-            self.log_error("Cannot show dialog! No QT support appears to exist in this enging. "
-                           "In order for the shell engine to run UI based apps, either pyside "
-                           "or PyQt needs to be installed in your system.")
+            self.log_error("Cannot show dialog %s! No QT support appears to exist in this engine. "
+                           "In order for the Shotgun engine to run UI based apps, either pyside "
+                           "or PyQt needs to be installed in your system." % title)
+            return
+        
+        from tank.platform.qt import QtCore, QtGui
         
         start_app_loop = False
         if self._qt_application is None:
@@ -170,13 +169,14 @@ class ShotgunEngine(Engine):
 
         :returns: (a standard QT dialog status return code, the created widget_class instance)
         """
+        if not self._has_ui:
+            self.log_error("Cannot show dialog %s! No QT support appears to exist in this engine. "
+                           "In order for the Shotgun engine to run UI based apps, either pyside "
+                           "or PyQt needs to be installed in your system." % title)
+            return
+        
         from tank.platform.qt import QtCore, QtGui
         
-        if not self._has_ui:
-            self.log_error("Cannot show dialog! No QT support appears to exist in this enging. "
-                           "In order for the shell engine to run UI based apps, either pyside "
-                           "or PyQt needs to be installed in your system.")
-
         if self._qt_application is None:
             # no Qapp is running - meaning there are no other dialogs
             # this is a chicken and egg thing - need to handle this dialog
