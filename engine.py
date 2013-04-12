@@ -31,29 +31,31 @@ class ShotgunEngine(Engine):
     ##########################################################################################
     # logging interfaces
 
+    # make sure every line of the logging output starts with some sort of 
+    # <html> tags (e.g. first char is <) - the shotgun code looks for this
+    # and will remove any other output. 
+
     def log_debug(self, msg):
         if self.get_setting("debug_logging", False):
-            msg = cgi.escape(str(msg))
-            sys.stdout.write("<b>DEBUG</b>: %s\n" % msg)
+            content = "<b>DEBUG: </b>%s" % cgi.escape(str(msg)) 
+            for line in content.split("\n"):
+                sys.stdout.write("<span>%s</span>\n" % line)
     
     def log_info(self, msg):
         # note - do not escape info messages
         # allow these to use html for formatting purposes
-        sys.stdout.write("%s\n" % msg)
+        for line in str(msg).split("\n"):
+            sys.stdout.write("<span>%s</span>\n" % line)
         
     def log_warning(self, msg):
-        # note - do not escape warning messages
-        # allow these to use html for formatting purposes
+        content = "<b>WARNING: </b>%s" % cgi.escape(str(msg)) 
+        for line in content.split("\n"):
+            sys.stdout.write("<span>%s</span>\n" % line)
 
-        # note: java bridge only captures stdout, not stderr
-        msg = cgi.escape(str(msg))
-        sys.stdout.write("<b>WARNING:</b> %s\n" % msg)
-    
     def log_error(self, msg):
-        # note: java bridge only captures stdout, not stderr
-        # make sure we escape html so that all content shows up in shotgun
-        msg = cgi.escape(str(msg))
-        sys.stdout.write("<b>ERROR:</b> %s\n" % msg)
+        content = "<b>ERROR: </b>%s" % cgi.escape(str(msg)) 
+        for line in content.split("\n"):
+            sys.stdout.write("<span>%s</span>\n" % line)
 
     
     ##########################################################################################
