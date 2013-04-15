@@ -9,9 +9,9 @@ incoming Tank Action Requests.
 
 from tank.platform import Engine
 import tank
-import cgi
 import sys
 import os
+import logging
 
 
 
@@ -20,9 +20,32 @@ class ShotgunEngine(Engine):
     An engine for Shotgun. This is normally called via the tank engine.    
     """
         
-    def init_engine(self):
+    def __init__(self, *args, **kwargs):
+        # passthrough so we can init stuff
         self._has_ui = False
         self._qt_application = None
+        
+        # set up a very basic logger, assuming it will be overridden
+        self._log = logging.getLogger("tank.tk-shotgun")
+        self._log.setLevel(logging.INFO)
+        ch = logging.StreamHandler()
+        formatter = logging.Formatter()
+        ch.setFormatter(formatter)
+        self._log.addHandler(ch)
+        
+        # see if someone is passing a logger to us inside tk.log
+        if len(args) > 0 and isinstance(args[0], tank.Tank):
+            if hasattr(args[0], "log"):
+                # there is a tank.log on the API instance.
+                # hook this up with our logging
+                self._log = args[0].log
+
+        super(ShotgunEngine, self).__init__(*args, **kwargs)
+        
+    def init_engine(self):
+        """
+        Init.
+        """
                 
     @property
     def has_ui(self):
@@ -37,25 +60,16 @@ class ShotgunEngine(Engine):
 
     def log_debug(self, msg):
         if self.get_setting("debug_logging", False):
-            content = "<b>DEBUG: </b>%s" % cgi.escape(str(msg)) 
-            for line in content.split("\n"):
-                sys.stdout.write("<span>%s</span>\n" % line)
+            self._log.debug(msg)
     
     def log_info(self, msg):
-        # note - do not escape info messages
-        # allow these to use html for formatting purposes
-        for line in str(msg).split("\n"):
-            sys.stdout.write("<span>%s</span>\n" % line)
+        self._log.info(msg)
         
     def log_warning(self, msg):
-        content = "<b>WARNING: </b>%s" % cgi.escape(str(msg)) 
-        for line in content.split("\n"):
-            sys.stdout.write("<span>%s</span>\n" % line)
+        self._log.warning(msg)
 
     def log_error(self, msg):
-        content = "<b>ERROR: </b>%s" % cgi.escape(str(msg)) 
-        for line in content.split("\n"):
-            sys.stdout.write("<span>%s</span>\n" % line)
+        self._log.error(msg)
 
     
     ##########################################################################################
