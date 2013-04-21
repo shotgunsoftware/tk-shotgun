@@ -52,6 +52,22 @@ class ShotgunEngine(Engine):
         return self._has_ui
                 
     ##########################################################################################
+    # command handling
+
+    def execute_command(self, cmd_key):
+        """
+        Executes a given command.
+        """
+        return self.commands[cmd_key]["callback"]()
+
+
+    def execute_old_style_command(self, cmd_key, entity_type, entity_ids):
+        """
+        Executes an old style shotgun specific command
+        """
+        return self.commands[cmd_key]["callback"](entity_type, entity_ids)
+                
+    ##########################################################################################
     # logging interfaces
 
     # make sure every line of the logging output starts with some sort of 
