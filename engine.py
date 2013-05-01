@@ -159,47 +159,47 @@ class ShotgunEngine(Engine):
                 base["qt_core"] = QtCore
                 base["qt_gui"] = QtGui
                 base["dialog_base"] = ProxyDialogPySide
+                self.log_debug("Successfully initialized PySide %s located in %s." % (PySide.__version__, PySide.__file__))
                 self._has_ui = True
-                self.log_debug("Successfully initialized PySide %s present in %s." % (PySide.__version__, PySide.__file__))
             except ImportError:
                 pass
             except Exception, e:
                 self.log_warning("Error setting up pyside. Pyside based UI support will not "
                                  "be available: %s" % e)
         
-        if not self._has_ui:
-            try:
-                from PyQt4 import QtCore, QtGui
-                import PyQt4
-                
-                # a simple dialog proxy that pushes the window forward
-                class ProxyDialogPyQt(QtGui.QDialog):
-                    def show(self):
-                        QtGui.QDialog.show(self)
-                        self.activateWindow()
-                        self.raise_()
-                
-                    def exec_(self):
-                        self.activateWindow()
-                        self.raise_()
-                        # the trick of activating + raising does not seem to be enough for
-                        # modal dialogs. So force put them on top as well.                        
-                        self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | self.windowFlags())
-                        QtGui.QDialog.exec_(self)
-                
-                
-                # hot patch the library to make it work with pyside code
-                QtCore.Signal = QtCore.pyqtSignal                
-                base["qt_core"] = QtCore
-                base["qt_gui"] = QtGui
-                base["dialog_base"] = ProxyDialogPyQt
-                self._has_ui = True
-                self.log_debug("Successfully initialized PyQt %s present in %s." % (PyQt4.__version__, PyQt4.__file__))
-            except ImportError:
-                pass
-            except Exception, e:
-                self.log_warning("Error setting up PyQt. PyQt based UI support will not "
-                                 "be available: %s" % e)
+#        if not self._has_ui:
+#            try:
+#                from PyQt4 import QtCore, QtGui
+#                import PyQt4
+#                
+#                # a simple dialog proxy that pushes the window forward
+#                class ProxyDialogPyQt(QtGui.QDialog):
+#                    def show(self):
+#                        QtGui.QDialog.show(self)
+#                        self.activateWindow()
+#                        self.raise_()
+#                
+#                    def exec_(self):
+#                        self.activateWindow()
+#                        self.raise_()
+#                        # the trick of activating + raising does not seem to be enough for
+#                        # modal dialogs. So force put them on top as well.                        
+#                        self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | self.windowFlags())
+#                        QtGui.QDialog.exec_(self)
+#                
+#                
+#                # hot patch the library to make it work with pyside code
+#                QtCore.Signal = QtCore.pyqtSignal                
+#                base["qt_core"] = QtCore
+#                base["qt_gui"] = QtGui
+#                base["dialog_base"] = ProxyDialogPyQt
+#                self.log_debug("Successfully initialized PyQt located in %s." % PyQt4.__file__)
+#                self._has_ui = True
+#            except ImportError:
+#                pass
+#            except Exception, e:
+#                self.log_warning("Error setting up PyQt. PyQt based UI support will not "
+#                                 "be available: %s" % e)
         
         return base
         
