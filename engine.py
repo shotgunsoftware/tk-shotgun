@@ -189,7 +189,8 @@ class ShotgunEngine(Engine):
 #                
 #                
 #                # hot patch the library to make it work with pyside code
-#                QtCore.Signal = QtCore.pyqtSignal                
+#                QtCore.Signal = QtCore.pyqtSignal     
+#                QtCore.Property = QtCore.pyqtProperty           
 #                base["qt_core"] = QtCore
 #                base["qt_gui"] = QtGui
 #                base["dialog_base"] = ProxyDialogPyQt
