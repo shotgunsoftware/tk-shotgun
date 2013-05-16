@@ -24,13 +24,24 @@ class Task(QtCore.QObject):
         
     def run_command(self):
         # execute the callback
-        self._callback()
+        
+        # note that because pyside has its own exception wrapper around
+        # exec we need to catch and log any exceptions here.
+        try:
+            self._callback()
+            
+        except tank.TankError, e:
+            self._engine.log_error(str(e))
 
-        # broadcast that we have finished this command
-        if not self._engine.has_received_ui_creation_requests():
-            # while the app has been doing its thing, no UIs were
-            # created (at least not any tank UIs) - assume it is a 
-            # console style app and that the end of its callback
-            # execution means that it is complete and that we should return 
-            self.finished.emit()
+        except Exception:
+            self._engine.log_exception("A general error was reported.")
+            
+        finally:
+            # broadcast that we have finished this command
+            if not self._engine.has_received_ui_creation_requests():
+                # while the app has been doing its thing, no UIs were
+                # created (at least not any tank UIs) - assume it is a 
+                # console style app and that the end of its callback
+                # execution means that it is complete and that we should return 
+                self.finished.emit()
         
