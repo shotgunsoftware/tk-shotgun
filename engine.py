@@ -137,10 +137,11 @@ class ShotgunEngine(Engine):
         # this will raise an exception when any QT code tries to use it
         class QTProxy(object):                        
             def __getattr__(self, name):
-                raise TankError("The Shotgun engine could not find a PyQt or PySide installation "
-                                "in your python system path. Apps using QT will not be able to "
-                                "execute. We recommend that you install PySide if you want to "
-                                "run UI applications in the Shell.")
+                raise tank.TankError("Looks like you are trying to run a Tank App that uses a QT "
+                                     "based UI, however the Shotgun engine could not find a PyQt "
+                                     "or PySide installation in your python system path. We " 
+                                     "recommend that you install PySide if you want to "
+                                     "run UI applications from within Shotgun.")
         
         base = {"qt_core": QTProxy(), "qt_gui": QTProxy(), "dialog_base": None}
         
