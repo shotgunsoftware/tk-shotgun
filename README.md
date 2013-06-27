@@ -1,4 +1,4 @@
 tk-shotgun
 ==========
 
-Tank Shotgun Engine
+Sgtk Shotgun Engine
