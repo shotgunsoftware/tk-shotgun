@@ -46,6 +46,11 @@ class ShotgunEngine(Engine):
         """
         Init.
         """
+        # if debug logging is turned on in the settings for this app, make sure
+        # that the logger accepts the debug stream
+        if self.get_setting("debug_logging", False):
+            self._log.setLevel(logging.DEBUG)
+        
                 
     @property
     def has_ui(self):
