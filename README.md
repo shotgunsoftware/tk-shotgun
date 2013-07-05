@@ -1,4 +1,4 @@
 tk-shotgun
 ==========
 
-Sgtk Shotgun Engine
+The Toolkit's Shotgun Engine
