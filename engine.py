@@ -91,11 +91,9 @@ class ShotgunEngine(Engine):
             # start up our QApp now
             QtGui.QApplication.setStyle("cleanlooks")
             qt_application = QtGui.QApplication([])
-            css_file = os.path.join(self.disk_location, "resources", "dark.css")
-            f = open(css_file)
-            css = f.read()
-            f.close()
-            qt_application.setStyleSheet(css) 
+
+            # use toolkit's built in std stylesheet            
+            qt_application.setStyleSheet( self._get_standard_qt_stylesheet() ) 
             
             # when the QApp starts, initialize our task code 
             QtCore.QTimer.singleShot(0, t.run_command )
