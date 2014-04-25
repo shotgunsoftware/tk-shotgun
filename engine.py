@@ -78,41 +78,65 @@ class ShotgunEngine(Engine):
         Executes a given command.
         """
         cb = self.commands[cmd_key]["callback"]
+        
         if not self.has_ui:
             # QT not available - just run the command straight
             return cb()
+        
         else:
-            from tank.platform.qt import QtCore, QtGui
-            
-            # we got QT capabilities. Start a QT app and fire the command into the app
-            tk_shell = self.import_module("tk_shotgun")
-            t = tk_shell.Task(self, cb)
-            
-            # start up our QApp now
-            QtGui.QApplication.setStyle("cleanlooks")
-            qt_application = QtGui.QApplication([])
-
-            # use toolkit's built in std stylesheet            
-            qt_application.setStyleSheet( self._get_standard_qt_stylesheet() ) 
-            
-            # when the QApp starts, initialize our task code 
-            QtCore.QTimer.singleShot(0, t.run_command )
-               
-            # and ask the main app to exit when the task emits its finished signal
-            t.finished.connect(qt_application.quit )
-               
-            # start the application loop. This will block the process until the task
-            # has completed - this is either triggered by a main window closing or
-            # byt the finished signal being called from the task class above.
-            qt_application.exec_()
-
+            # start the UI
+            self.__setup_ui(cb)
 
     def execute_old_style_command(self, cmd_key, entity_type, entity_ids):
         """
         Executes an old style shotgun specific command. Old style commands 
         are assumed to not use a UI.
         """
-        return self.commands[cmd_key]["callback"](entity_type, entity_ids)
+        cb = self.commands[cmd_key]["callback"]
+        
+        if not self.has_ui:
+            # QT not available - just run the command straight
+            return cb(entity_type, entity_ids)
+        
+        else:
+            # wrap the callback
+            cb_wrapped = lambda et=entity_type, ids=entity_ids: cb(et, ids)    
+            # start the UI
+            self.__setup_ui(cb_wrapped)
+
+    def __setup_ui(self, callback):
+        """
+        Starts a QApplication and initializes the UI.
+        """
+        from tank.platform.qt import QtCore, QtGui
+        
+        # we got QT capabilities. Start a QT app and fire the command into the app
+        tk_shotgun = self.import_module("tk_shotgun")
+                
+        t = tk_shotgun.Task(self, callback)
+        
+        # start up our QApp now
+        QtGui.QApplication.setStyle("cleanlooks")
+        qt_application = QtGui.QApplication([])
+        
+        # set up a default app icon based on the engine icon
+        qt_application.setWindowIcon(QtGui.QIcon(self.icon_256))
+
+        # use toolkit's built in std stylesheet            
+        qt_application.setStyleSheet(self._get_standard_qt_stylesheet()) 
+        
+        # when the QApp starts, initialize our task code 
+        QtCore.QTimer.singleShot(0, t.run_command)
+           
+        # and ask the main app to exit when the task emits its finished signal
+        t.finished.connect(qt_application.quit)
+           
+        # start the application loop. This will block the process until the task
+        # has completed - this is either triggered by a main window closing or
+        # byt the finished signal being called from the task class above.
+        qt_application.exec_()
+
+
                 
     ##########################################################################################
     # logging interfaces
