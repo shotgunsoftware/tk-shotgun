@@ -116,14 +116,9 @@ class ShotgunEngine(Engine):
         t = tk_shotgun.Task(self, callback)
         
         # start up our QApp now
-        QtGui.QApplication.setStyle("cleanlooks")
-        qt_application = QtGui.QApplication([])
-        
-        # set up a default app icon based on the engine icon
+        qt_application = QtGui.QApplication([])        
         qt_application.setWindowIcon(QtGui.QIcon(self.icon_256))
-
-        # use toolkit's built in std stylesheet            
-        qt_application.setStyleSheet(self._get_standard_qt_stylesheet()) 
+        self._initialize_dark_look_and_feel()        
         
         # when the QApp starts, initialize our task code 
         QtCore.QTimer.singleShot(0, t.run_command)
