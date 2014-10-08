@@ -29,7 +29,14 @@ class ShotgunEngine(Engine):
         
     def __init__(self, *args, **kwargs):
         # passthrough so we can init stuff
+        
+        # the has_ui flag indicates that there is an active QApplicaton running and that UI
+        # code can be rendered.
         self._has_ui = False
+        
+        # the has_qt flag indicates that the QT subsystem is present and can be started 
+        self._has_qt = False
+        
         self._ui_created = False
         
         # set up a very basic logger, assuming it will be overridden
@@ -79,7 +86,7 @@ class ShotgunEngine(Engine):
         """
         cb = self.commands[cmd_key]["callback"]
         
-        if not self.has_ui:
+        if not self._has_qt:
             # QT not available - just run the command straight
             return cb()
         
@@ -94,7 +101,7 @@ class ShotgunEngine(Engine):
         """
         cb = self.commands[cmd_key]["callback"]
         
-        if not self.has_ui:
+        if not self._has_qt:
             # QT not available - just run the command straight
             return cb(entity_type, entity_ids)
         
@@ -118,7 +125,10 @@ class ShotgunEngine(Engine):
         # start up our QApp now
         qt_application = QtGui.QApplication([])        
         qt_application.setWindowIcon(QtGui.QIcon(self.icon_256))
-        self._initialize_dark_look_and_feel()        
+        self._initialize_dark_look_and_feel()
+
+        # now we have a working UI!
+        self._has_ui = True        
         
         # when the QApp starts, initialize our task code 
         QtCore.QTimer.singleShot(0, t.run_command)
@@ -174,9 +184,9 @@ class ShotgunEngine(Engine):
         
         base = {"qt_core": QTProxy(), "qt_gui": QTProxy(), "dialog_base": None}
         
-        self._has_ui = False
+        self._has_qt = False
         
-        if not self._has_ui:
+        if not self._has_qt:
             try:
                 from PySide import QtCore, QtGui
                 import PySide
@@ -212,14 +222,14 @@ class ShotgunEngine(Engine):
                 base["dialog_base"] = ProxyDialogPySide
                 self.log_debug("Successfully initialized PySide '%s' located in %s." 
                                % (PySide.__version__, PySide.__file__))
-                self._has_ui = True
+                self._has_qt = True
             except ImportError:
                 pass
             except Exception, e:
                 self.log_warning("Error setting up pyside. Pyside based UI support will not "
                                  "be available: %s" % e)
         
-        if not self._has_ui:
+        if not self._has_qt:
             try:
                 from PyQt4 import QtCore, QtGui
                 import PyQt4
@@ -253,7 +263,7 @@ class ShotgunEngine(Engine):
                 base["dialog_base"] = ProxyDialogPyQt
                 self.log_debug("Successfully initialized PyQt '%s' located in %s." 
                                % (QtCore.PYQT_VERSION_STR, PyQt4.__file__))
-                self._has_ui = True
+                self._has_qt = True
             except ImportError:
                 pass
             except Exception, e:
@@ -276,7 +286,7 @@ class ShotgunEngine(Engine):
         
         :returns: the created widget_class instance
         """
-        if not self._has_ui:
+        if not self._has_qt:
             self.log_error("Cannot show dialog %s! No QT support appears to exist in this engine. "
                            "In order for the shell engine to run UI based apps, either pyside "
                            "or PyQt needs to be installed in your system." % title)
@@ -300,7 +310,7 @@ class ShotgunEngine(Engine):
 
         :returns: (a standard QT dialog status return code, the created widget_class instance)
         """
-        if not self._has_ui:
+        if not self._has_qt:
             self.log_error("Cannot show dialog %s! No QT support appears to exist in this engine. "
                            "In order for the shell engine to run UI based apps, either pyside "
                            "or PyQt needs to be installed in your system." % title)
