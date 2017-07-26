@@ -123,7 +123,6 @@ class ShotgunEngine(Engine):
         t = tk_shotgun.Task(self, callback)
         
         # start up our QApp now
-        QtGui.QApplication.setLibraryPaths([])
         qt_application = QtGui.QApplication([])        
         qt_application.setWindowIcon(QtGui.QIcon(self.icon_256))
         self._initialize_dark_look_and_feel()
