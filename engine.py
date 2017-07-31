@@ -121,7 +121,13 @@ class ShotgunEngine(Engine):
         tk_shotgun = self.import_module("tk_shotgun")
                 
         t = tk_shotgun.Task(self, callback)
-        
+
+        # We need to clear Qt library paths on Linux if KDE is the active environment.
+        # This resolves issues with mismatched Qt libraries between the OS and the
+        # application being launched if it is a DCC that comes with a bundled Qt.
+        if sys.platform == "linux2" and os.environ.get("KDE_FULL_SESSION") is not None:
+            QtGui.QApplication.setLibraryPaths([])
+
         # start up our QApp now
         qt_application = QtGui.QApplication([])        
         qt_application.setWindowIcon(QtGui.QIcon(self.icon_256))
