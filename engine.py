@@ -69,6 +69,15 @@ class ShotgunEngine(Engine):
     @property
     def has_ui(self):
         return self._has_ui
+
+    @property
+    def context_change_allowed(self):
+        """
+        Whether this engine allows on-the-fly context changes.
+
+        :rtype: bool
+        """
+        return True
                 
     def has_received_ui_creation_requests(self):
         """
