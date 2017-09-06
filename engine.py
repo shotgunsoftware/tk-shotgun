@@ -89,11 +89,12 @@ class ShotgunEngine(Engine):
     @property
     def host_info(self):
         """
-        :returns: A (name, release) tuple with informations about the
-                  application hosting this engine.
+        :returns: A {"name": application name, "version": application version} 
+                  dictionary with informations about the application hosting this
+                  engine.
         """
-        version = self.shotgun.info()["version"]
-        return ("Shotgun", ".".join([str(x) for x in version]))
+        version = self.shotgun.info().get("version") or ["unknown"]
+        return {"name": "Shotgun", "version": ".".join([str(x) for x in version])}
 
     ##########################################################################################
     # command handling
