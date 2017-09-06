@@ -85,7 +85,16 @@ class ShotgunEngine(Engine):
         via the show_dialog methods
         """
         return self._ui_created
-                
+
+    @property
+    def host_info(self):
+        """
+        :returns: A (name, release) tuple with informations about the
+                  application hosting this engine.
+        """
+        version = self.shotgun.info()["version"]
+        return ("Shotgun", ".".join([str(x) for x in version]))
+
     ##########################################################################################
     # command handling
 
