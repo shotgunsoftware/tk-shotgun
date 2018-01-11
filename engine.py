@@ -276,7 +276,7 @@ class ShotgunEngine(Engine):
                         # the trick of activating + raising does not seem to be enough for
                         # modal dialogs. So force put them on top as well.                        
                         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | self.windowFlags())
-                        QtGui.QDialog.exec_(self)
+                        return QtGui.QDialog.exec_(self)
                 
                 
                 # hot patch the library to make it work with pyside code
