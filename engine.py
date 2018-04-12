@@ -11,15 +11,12 @@
 """
 Implements the Shotgun Engine in Tank, e.g the client side script runner foundation which handles
 incoming Tank Action Requests.
-
 """
-
 from tank.platform import Engine
 import tank
 import sys
 import os
 import logging
-
 
 
 class ShotgunEngine(Engine):
@@ -40,7 +37,7 @@ class ShotgunEngine(Engine):
         # the has_qt flag indicates that the QT subsystem is present and can be started 
         self._has_qt = False
 
-        # indicates that requests for ui creation have been
+        # indicates that apps have tried to launch UI dialogs
         self._has_received_ui_creation_requests = False
         
         # set up a very basic logger, assuming it will be overridden
@@ -113,16 +110,23 @@ class ShotgunEngine(Engine):
         """
         cb = self.commands[cmd_key]["callback"]
 
-        if not self._has_qt and not self._has_ui:
-            # QT not available - just run the command straight
-            return cb()
+        if not self._has_qt or self._has_ui:
+            # there are two different cases where we can just launch the callback:
 
-        elif self._has_ui:
-            # we have a running qapplication. No need to create one.
+            # - A QApplication is already running and there is nothing
+            #   we need to do in order to initialize anything further.
+            #   this is akin to the case of executing a command in a DCC
+            #   which already has got a running UI environment
+            #
+            # - QT is not available at all. In this case we can also
+            #   execute the command directly, and in the case where
+            #   the command launches show_dialog() or show_modal(),
+            #   we'll catch those and will display an error message
             return cb()
 
         else:
-            # start the UI
+            # We have QT but no QApplication running. Start it
+            # and kick off the commmand.
             self.__setup_ui(cb)
 
     def execute_old_style_command(self, cmd_key, entity_type, entity_ids):
@@ -184,7 +188,6 @@ class ShotgunEngine(Engine):
         qt_application.exec_()
 
 
-                
     ##########################################################################################
     # logging interfaces
 
@@ -213,91 +216,33 @@ class ShotgunEngine(Engine):
         """
         check for pyside then pyqt
         """
+        # Just call the base implementation and monkey patch QMessageBox.
+        base = super(ShotgunEngine, self)._define_qt_base()
 
-        # proxy class used when QT does not exist on the system.
-        # this will raise an exception when any QT code tries to use it
-        class QTProxy(object):                        
-            def __getattr__(self, name):
-                raise tank.TankError("Looks like you are trying to run a Sgtk App that uses a QT "
-                                     "based UI, however the Shotgun engine could not find a PyQt "
-                                     "or PySide installation in your python system path. We " 
-                                     "recommend that you install PySide if you want to "
-                                     "run UI applications from within Shotgun.")
-        
-        base = {"qt_core": QTProxy(), "qt_gui": QTProxy(), "dialog_base": None}
-        
-        self._has_qt = False
-        
-        if not self._has_qt:
-            # First try to import pyside2
-            try:
-                # probe and check if we have pyside2 available
-                import PySide2
+        if not base:
+            self._has_qt = False
 
-                # looks like we do
-                base = super(ShotgunEngine, self)._define_qt_base()
+            # proxy class used when QT does not exist on the system.
+            # this will raise an exception when any QT code tries to use it
+            class QTProxy(object):
+                def __getattr__(self, name):
+                    raise tank.TankError("Looks like you are trying to run a Sgtk App that uses a QT "
+                                         "based UI, however the Shotgun engine could not find a PyQt "
+                                         "or PySide installation in your python system path. We "
+                                         "recommend that you install PySide if you want to "
+                                         "run UI applications from within Shotgun.")
 
-                QtGui = base["qt_gui"]
-                self._has_qt = True
+            base = {"qt_core": QTProxy(), "qt_gui": QTProxy(), "dialog_base": None}
 
-            except ImportError:
-                # no pyside2 available. Continue to probe
-                pass
 
-        if not self._has_qt:
-            # Now try to import pyside
-            try:
-                from PySide import QtCore, QtGui
-                import PySide
+        else:
+            self._has_qt = True
+            QtCore = base["qt_core"]
+            QtGui = base["qt_gui"]
 
-                # Some old versions of PySide don't include version information
-                # so add something here so that we can use PySide.__version__ 
-                # later without having to check!
-                if not hasattr(PySide, "__version__"):
-                    PySide.__version__ = "<unknown>"
-
-                base["qt_core"] = QtCore
-                base["qt_gui"] = QtGui
-                self.log_debug("Successfully initialized PySide '%s' located in %s."
-                               % (PySide.__version__, PySide.__file__))
-
-                # tell QT4 to interpret C strings as utf-8
-                utf8 = QtCore.QTextCodec.codecForName("utf-8")
-                QtCore.QTextCodec.setCodecForCStrings(utf8)
-
-                self._has_qt = True
-            except ImportError:
-                pass
-            except Exception, e:
-                self.log_warning("Error setting up pyside. Pyside based UI support will not "
-                                 "be available: %s" % e)
-        
-        if not self._has_qt:
-            try:
-                from PyQt4 import QtCore, QtGui
-                import PyQt4
-                # hot patch the library to make it work with pyside code
-                QtCore.Signal = QtCore.pyqtSignal     
-                QtCore.Slot = QtCore.pyqtSlot
-                QtCore.Property = QtCore.pyqtProperty           
-                base["qt_core"] = QtCore
-                base["qt_gui"] = QtGui
-                self.log_debug("Successfully initialized PyQt '%s' located in %s." 
-                               % (QtCore.PYQT_VERSION_STR, PyQt4.__file__))
-
-                # tell QT4 to interpret C strings as utf-8
-                utf8 = QtCore.QTextCodec.codecForName("utf-8")
-                QtCore.QTextCodec.setCodecForCStrings(utf8)
-
-                self._has_qt = True
-            except ImportError:
-                pass
-            except Exception, e:
-                self.log_warning("Error setting up PyQt. PyQt based UI support will not "
-                                 "be available: %s" % e)
-
-        # if we do have QT available, configure some basic properties
-        if self._has_qt:
+            # tell QT4 to interpret C strings as utf-8
+            utf8 = QtCore.QTextCodec.codecForName("utf-8")
+            QtCore.QTextCodec.setCodecForCStrings(utf8)
 
             # a simple dialog proxy that pushes the window forward
             class ProxyDialogPyQt(QtGui.QDialog):
