@@ -28,8 +28,6 @@ class ShotgunEngine(Engine):
         """
         Constructor
         """
-        # pass-through so we can init stuff
-        
         # the has_ui flag indicates that there is an active QApplicaton
         # running and that UI code can be rendered.
         self._has_ui = False
