@@ -208,11 +208,11 @@ class ShotgunEngine(Engine):
 
     
     ##########################################################################################
-    # pyside / qt
+    # PySide / QT
     
     def _define_qt_base(self):
         """
-        check for pyside then pyqt
+        Define the QT environment.
         """
         # Just call the base implementation and monkey patch QMessageBox.
         base = super(ShotgunEngine, self)._define_qt_base()
@@ -280,7 +280,7 @@ class ShotgunEngine(Engine):
         """
         if not self._has_qt:
             self.log_error("Cannot show dialog %s! No QT support appears to exist in this engine. "
-                           "In order for the Shotgun engine to run UI based apps, either pyside "
+                           "In order for the Shotgun engine to run UI based apps, either PySide "
                            "or PyQt needs to be installed in your system." % title)
             return
 
@@ -307,7 +307,7 @@ class ShotgunEngine(Engine):
         """
         if not self._has_qt:
             self.log_error("Cannot show dialog %s! No QT support appears to exist in this engine. "
-                           "In order for the Shotgun engine to run UI based apps, either pyside "
+                           "In order for the Shotgun engine to run UI based apps, either PySide "
                            "or PyQt needs to be installed in your system." % title)
             return
 
