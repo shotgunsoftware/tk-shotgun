@@ -57,12 +57,20 @@ class ShotgunEngine(Engine):
         
     def init_engine(self):
         """
-        Init.
+        Initialization
         """
         # if debug logging is turned on in the settings for this app, make sure
         # that the logger accepts the debug stream
         if self.get_setting("debug_logging", False):
             self._log.setLevel(logging.DEBUG)
+
+    def post_app_init(self):
+        """
+        Initialization that runs after all apps and the QT abstractions have been loaded.
+        """
+        if self._has_ui:
+            # make sure we have a dark theme
+            self._initialize_dark_look_and_feel()
 
     @property
     def has_ui(self):
@@ -103,8 +111,6 @@ class ShotgunEngine(Engine):
     def execute_command(self, cmd_key):
         """
         Executes a given command.
-
-        Note: This is part of a legacy pathway.
         """
         cb = self.commands[cmd_key]["callback"]
 
@@ -136,12 +142,18 @@ class ShotgunEngine(Engine):
         """
         cb = self.commands[cmd_key]["callback"]
         
-        if not self._has_qt and not self._has_ui:
-            # QT not available - just run the command straight
-            return cb(entity_type, entity_ids)
+        if not self._has_qt or self._has_ui:
+            # there are two different cases where we can just launch the callback:
 
-        elif self._has_ui:
-            # we have a running qapplication. No need to create one.
+            # - A QApplication is already running and there is nothing
+            #   we need to do in order to initialize anything further.
+            #   this is akin to the case of executing a command in a DCC
+            #   which already has got a running UI environment
+            #
+            # - QT is not available at all. In this case we can also
+            #   execute the command directly, and in the case where
+            #   the command launches show_dialog() or show_modal(),
+            #   we'll catch those and will display an error message
             return cb(entity_type, entity_ids)
 
         else:
@@ -170,6 +182,9 @@ class ShotgunEngine(Engine):
         # start up our QApp now
         qt_application = QtGui.QApplication([])        
         qt_application.setWindowIcon(QtGui.QIcon(self.icon_256))
+
+        # make sure we have a dark theme
+        self._initialize_dark_look_and_feel()
 
         # now we have a working UI!
         self._has_ui = True        
@@ -224,14 +239,13 @@ class ShotgunEngine(Engine):
             # this will raise an exception when any QT code tries to use it
             class QTProxy(object):
                 def __getattr__(self, name):
-                    raise tank.TankError("Looks like you are trying to run a Sgtk App that uses a QT "
-                                         "based UI, however the Shotgun engine could not find a PyQt "
-                                         "or PySide installation in your python system path. We "
-                                         "recommend that you install PySide if you want to "
-                                         "run UI applications from within Shotgun.")
+                    raise tank.TankError(
+                        "The Shotgun Toolkit App you are trying to execute requires a full QT "
+                        "environment in order to render its UI. A valid PySide2/PySide/PyQt "
+                        "installation could not be found in your python system path."
+                    )
 
             base = {"qt_core": QTProxy(), "qt_gui": QTProxy(), "dialog_base": None}
-
 
         else:
             self._has_qt = True
@@ -264,7 +278,6 @@ class ShotgunEngine(Engine):
 
         return base
         
-        
     def show_dialog(self, title, bundle, widget_class, *args, **kwargs):
         """
         Shows a non-modal dialog window in a way suitable for this engine. 
@@ -278,17 +291,7 @@ class ShotgunEngine(Engine):
         
         :returns: the created widget_class instance
         """
-        if not self._has_qt:
-            self.log_error("Cannot show dialog %s! No QT support appears to exist in this engine. "
-                           "In order for the Shotgun engine to run UI based apps, either PySide "
-                           "or PyQt needs to be installed in your system." % title)
-            return
-
-        # make sure we have a dark theme
-        self._initialize_dark_look_and_feel()
-
         self._has_received_ui_creation_requests = True
-        
         return Engine.show_dialog(self, title, bundle, widget_class, *args, **kwargs)    
     
     def show_modal(self, title, bundle, widget_class, *args, **kwargs):
@@ -305,17 +308,7 @@ class ShotgunEngine(Engine):
 
         :returns: (a standard QT dialog status return code, the created widget_class instance)
         """
-        if not self._has_qt:
-            self.log_error("Cannot show dialog %s! No QT support appears to exist in this engine. "
-                           "In order for the Shotgun engine to run UI based apps, either PySide "
-                           "or PyQt needs to be installed in your system." % title)
-            return
-
-        # make sure we have a dark theme
-        self._initialize_dark_look_and_feel()
-
         self._has_received_ui_creation_requests = True
-        
         return Engine.show_modal(self, title, bundle, widget_class, *args, **kwargs)
 
 
