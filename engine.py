@@ -229,10 +229,9 @@ class ShotgunEngine(Engine):
         """
         Define the QT environment.
         """
-        # Just call the base implementation and monkey patch QMessageBox.
         base = super(ShotgunEngine, self)._define_qt_base()
 
-        if not base:
+        if not base["qt_gui"]:
             self._has_qt = False
 
             # proxy class used when QT does not exist on the system.
@@ -269,7 +268,8 @@ class ShotgunEngine(Engine):
                     # the trick of activating + raising does not seem to be enough for
                     # modal dialogs. So force put them on top as well.
                     self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | self.windowFlags())
-                    QtGui.QDialog.exec_(self)
+                    return QtGui.QDialog.exec_(self)
+
             base["dialog_base"] = ProxyDialogPyQt
 
             # also figure out if qt is already running
