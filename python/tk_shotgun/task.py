@@ -36,7 +36,7 @@ class Task(QtCore.QObject):
         try:
             self._callback()
             
-        except tank.TankError, e:
+        except tank.TankError as e:
             self._engine.log_error(str(e))
 
         except Exception:
