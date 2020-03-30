@@ -28,5 +28,5 @@ description: "Tank Integration in Shotgun"
 
 # Required minimum versions for this item to run
 requires_shotgun_version:
-requires_core_version: "v0.18.24"
+requires_core_version: "v0.19.1"
 
