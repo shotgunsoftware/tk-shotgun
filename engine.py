@@ -176,7 +176,7 @@ class ShotgunEngine(Engine):
         # We need to clear Qt library paths on Linux if KDE is the active environment.
         # This resolves issues with mismatched Qt libraries between the OS and the
         # application being launched if it is a DCC that comes with a bundled Qt.
-        if tank.platform.is_linux() and os.environ.get("KDE_FULL_SESSION") is not None:
+        if tank.util.is_linux() and os.environ.get("KDE_FULL_SESSION") is not None:
             QtGui.QApplication.setLibraryPaths([])
 
         # start up our QApp now
