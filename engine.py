@@ -237,7 +237,7 @@ class ShotgunEngine(Engine):
             class QTProxy(object):
                 def __getattr__(self, name):
                     raise tank.TankError(
-                        "The Shotgun Toolkit App you are trying to execute requires a full QT "
+                        "The SG Toolkit App you are trying to execute requires a full QT "
                         "environment in order to render its UI. A valid PySide2/PySide/PyQt "
                         "installation could not be found in your python system path."
                     )
