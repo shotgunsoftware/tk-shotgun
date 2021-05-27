@@ -103,7 +103,7 @@ class ShotgunEngine(Engine):
                   engine.
         """
         version = self.shotgun.info().get("version") or ["unknown"]
-        return {"name": "Shotgun", "version": ".".join([str(x) for x in version])}
+        return {"name": "ShotGrid", "version": ".".join([str(x) for x in version])}
 
     ##########################################################################################
     # command handling
