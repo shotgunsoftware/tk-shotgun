@@ -24,7 +24,7 @@ requires_shotgun_fields:
 
 # More verbose description of this item
 display_name: "ShotGrid Engine"
-description: "Tank Integration in ShotGrid"
+description: "Toolkit Integration in ShotGrid"
 
 # Required minimum versions for this item to run
 requires_shotgun_version:
