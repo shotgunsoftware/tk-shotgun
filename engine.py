@@ -179,6 +179,10 @@ class ShotgunEngine(Engine):
         if tank.util.is_linux() and os.environ.get("KDE_FULL_SESSION") is not None:
             QtGui.QApplication.setLibraryPaths([])
 
+        # Enable High DPI support in Qt5 (default enabled in Qt6)
+        if QtCore.qVersion()[0] == "5":
+            QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
+
         # start up our QApp now
         qt_application = QtGui.QApplication([])
         qt_application.setWindowIcon(QtGui.QIcon(self.icon_256))
