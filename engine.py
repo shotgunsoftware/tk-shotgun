@@ -244,10 +244,6 @@ class ShotgunEngine(Engine):
             QtCore = base["qt_core"]
             QtGui = base["qt_gui"]
 
-            # tell QT4 to interpret C strings as utf-8
-            utf8 = QtCore.QTextCodec.codecForName("utf-8")
-            QtCore.QTextCodec.setCodecForCStrings(utf8)
-
             # a simple dialog proxy that pushes the window forward
             class ProxyDialogPyQt(QtGui.QDialog):
                 def show(self):
