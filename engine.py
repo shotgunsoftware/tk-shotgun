@@ -12,6 +12,7 @@
 Implements the Shotgun Engine in Tank, e.g the client side script runner foundation which handles
 incoming Tank Action Requests.
 """
+
 from tank.platform import Engine
 import tank
 import sys
