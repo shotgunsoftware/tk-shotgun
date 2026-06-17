@@ -54,7 +54,7 @@ class ShotgunEngine(Engine):
                 # hook this up with our logging
                 self._log = args[0].log
 
-        super(ShotgunEngine, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def init_engine(self):
         """
@@ -222,7 +222,7 @@ class ShotgunEngine(Engine):
         """
         Define the QT environment.
         """
-        base = super(ShotgunEngine, self)._define_qt_base()
+        base = super()._define_qt_base()
 
         if not base["qt_gui"]:
             self._has_qt = False
